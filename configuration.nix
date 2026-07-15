@@ -35,9 +35,9 @@
     # onActivation.cleanup = "zap";  # remove anything not listed here, !!!apply only on a fresh installation
     onActivation.autoUpdate = true;
     onActivation.extraFlags = [ "--force" ];
-    # brews = [
-      # "herdr"
-    # ];
+    brews = [
+      "jira-cli"
+    ];
     casks = [
       "wezterm"
       # "claude-code"
