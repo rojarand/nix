@@ -16,12 +16,12 @@
 
   outputs = inputs@{ self, nix-darwin, nix-homebrew, home-manager, nixpkgs }:
     let
-      # The one username line to change if this isn't your machine.
-      # bootstrap.sh offers to rewrite this for you if your macOS username differs.
+      # macOS account name and nix-darwin configuration name (usually hostname).
       user = "ran";
+      hostName = "mb-ran-6167";
     in
     {
-      darwinConfigurations."mac" = nix-darwin.lib.darwinSystem {
+      darwinConfigurations.${hostName} = nix-darwin.lib.darwinSystem {
         specialArgs = { inherit user; };
         modules = [
           ./configuration.nix
