@@ -37,7 +37,6 @@
     onActivation.extraFlags = [ "--force" ];
     brews = [
       "jira-cli"
-      "copilot"
     ];
     casks = [
       "wezterm"
