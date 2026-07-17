@@ -1,5 +1,8 @@
-{ pkgs, user, ... }:
+{ config, pkgs, user, ... }:
 
+let
+  dotfiles = "${config.home.homeDirectory}/.dotfiles";
+in
 {
   home = {
     username = user;
@@ -15,6 +18,9 @@
       EDITOR = "vim";
       VISUAL = "vim";
     };
+
+    file.".config/wezterm".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
   };
 
   programs.git = {
