@@ -11,22 +11,33 @@ in
 
     packages = with pkgs; [
       git
-      vim
+      neovim
     ];
 
     sessionVariables = {
-      EDITOR = "vim";
-      VISUAL = "vim";
+      EDITOR = "nvim";
+      VISUAL = "nvim";
     };
 
     file.".config/wezterm".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
   };
 
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    autosuggestion.enable = true;
+    syntaxHighlighting.enable = true;
+
+    initContent = ''
+      bindkey '^f' autosuggest-accept
+    '';
+  };
+
   programs.git = {
     enable = true;
-    extraConfig = {
-      core.editor = "vim";
+    settings = {
+      core.editor = "nvim";
     };
   };
 }
