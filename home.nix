@@ -15,9 +15,9 @@ in
     #fzf       # fuzzy finder
     #jq        # json on the command line
     #lazygit
-    #neovim
+    neovim
     #the font everything renders in
-    #nerd-fonts.hack
+    nerd-fonts.hack
   ];
   fonts.fontconfig.enable = true;
   home.sessionVariables.EDITOR = "nvim";
@@ -27,7 +27,7 @@ in
     autosuggestion.enable = true;      # ghost text from history
     syntaxHighlighting.enable = true;  # commands turn green when valid
     initContent = ''
-      #bindkey '^f' autosuggest-accept
+      bindkey '^f' autosuggest-accept
     '';
     shellAliases = {
       #".." = "cd ..";
