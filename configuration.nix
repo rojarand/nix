@@ -1,4 +1,4 @@
-{ user, ... }:
+{ pkgs, user, ... }:
 
 {
   # Determinate already manages the Nix daemon, so nix-darwin shouldn't.
@@ -11,6 +11,13 @@
   users.users.${user} = {
     home = "/Users/${user}";
   };
+
+  # Install fonts through nix-darwin so macOS GUI apps (including the
+  # Homebrew WezTerm cask) can discover them via CoreText.
+  fonts.packages = [
+    pkgs.nerd-fonts.hack
+  ];
+
   system.stateVersion = 6;
   system.defaults = {
     NSGlobalDomain = {
