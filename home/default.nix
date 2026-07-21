@@ -52,6 +52,21 @@ bindkey '^f' autosuggest-accept
 EOF
       fi
     '';
+
+    activation.installStarshipZshIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      zshrc="$HOME/.zshrc"
+      marker="# BEGIN nix-env-setup starship"
+
+      if ! grep -qF "$marker" "$zshrc" 2>/dev/null; then
+        cat >> "$zshrc" <<'EOF'
+
+# BEGIN nix-env-setup starship
+# Added by Home Manager from nix-env-setup.
+eval "$(${pkgs.starship}/bin/starship init zsh)"
+# END nix-env-setup starship
+EOF
+      fi
+    '';
   };
 
   programs.starship = {
