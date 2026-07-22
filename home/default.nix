@@ -24,6 +24,10 @@ in
 
     file.".config/wezterm".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
+    file.".config/nvim".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
+
+
 
     # The machine already has a hand-written ~/.zshrc, so Home Manager's
     # generated zsh config is not linked unless that file is moved away.
