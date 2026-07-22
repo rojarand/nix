@@ -12,6 +12,7 @@ in
     packages = with pkgs; [
       git
       neovim
+      ripgrep
       zsh-autosuggestions
       zsh-completions
       zsh-syntax-highlighting
