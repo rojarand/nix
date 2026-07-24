@@ -44,6 +44,7 @@
     onActivation.extraFlags = [ "--force" ];
     brews = [
       "jira-cli"
+      "herdr"
     ];
     casks = [
       "wezterm"

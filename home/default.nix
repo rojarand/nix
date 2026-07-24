@@ -27,6 +27,9 @@ in
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
     file.".config/nvim".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
+    file.".config/herdr".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
+
 
 
 
