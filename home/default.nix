@@ -30,7 +30,14 @@ in
     file.".config/herdr".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
 
-
+    file.".pi/agent/AGENTS.md".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
+    file.".claude/CLAUDE.md".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
+    file.".codex/AGENTS.md".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
+    file.".config/opencode/AGENTS.md".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
 
 
     # The machine already has a hand-written ~/.zshrc, so Home Manager's
