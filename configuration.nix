@@ -45,9 +45,11 @@
     brews = [
       "jira-cli"
       "herdr"
+      "ffmpeg"
     ];
     casks = [
       "wezterm"
+      "opensuperwhisper"
       # "claude-code"
     ];
   };
