@@ -50,6 +50,7 @@
     casks = [
       "wezterm"
       "opensuperwhisper"
+      "automic-vault/isotopes/automic-vault"
       # "claude-code"
     ];
   };
