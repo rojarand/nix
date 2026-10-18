@@ -19,8 +19,27 @@
       # macOS account name and nix-darwin configuration name (usually hostname).
       user = "ran";
       hostName = "mb-ran-6167";
+
+      # Linux (Raspberry Pi) account name.
+      linuxUser = "zebul";
+      linuxSystem = "aarch64-linux";
     in
     {
+      homeConfigurations.${linuxUser} = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = linuxSystem;
+          config.allowUnfree = true;
+        };
+        extraSpecialArgs = {
+          user = linuxUser;
+          homeDirectory = "/home/${linuxUser}";
+        };
+        modules = [ ./home ];
+      };
+
+      packages.${linuxSystem}.home-manager =
+        home-manager.packages.${linuxSystem}.home-manager;
+
       darwinConfigurations.${hostName} = nix-darwin.lib.darwinSystem {
         specialArgs = { inherit user; };
         modules = [

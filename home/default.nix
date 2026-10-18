@@ -1,4 +1,7 @@
-{ config, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user
+, homeDirectory ? if pkgs.stdenv.isDarwin then "/Users/${user}" else "/home/${user}"
+, ...
+}:
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
@@ -6,7 +9,7 @@ in
 {
   home = {
     username = user;
-    homeDirectory = "/Users/${user}";
+    inherit homeDirectory;
     stateVersion = "26.05";
 
     packages = with pkgs; [
