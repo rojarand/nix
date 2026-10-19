@@ -7,19 +7,12 @@ let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
 in
 {
+  imports = [ ./common.nix ];
+
   home = {
     username = user;
     inherit homeDirectory;
     stateVersion = "26.05";
-
-    packages = with pkgs; [
-      git
-      neovim
-      ripgrep
-      zsh-autosuggestions
-      zsh-completions
-      zsh-syntax-highlighting
-    ];
 
     sessionVariables = {
       EDITOR = "nvim";
@@ -30,8 +23,12 @@ in
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
     file.".config/nvim".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
-    file.".config/herdr".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
+    # Only config.toml is managed. herdr writes sockets, logs and session
+    # state next to its config, so linking the whole directory would drop
+    # runtime files into this repository and break `nix flake` (sockets
+    # cannot be copied into the store).
+    file.".config/herdr/config.toml".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr/config.toml";
 
     file.".pi/agent/AGENTS.md".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
