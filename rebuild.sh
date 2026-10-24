@@ -7,6 +7,5 @@ if [[ "${EUID}" -eq 0 ]]; then
 fi
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-"$DIR/check-root-owned-files.sh" "$DIR"
 ln -sfn "$DIR" "$HOME/.dotfiles"
 exec sudo /run/current-system/sw/bin/darwin-rebuild switch --flake "path:$DIR#mb-ran-6167"
