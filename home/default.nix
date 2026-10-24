@@ -103,4 +103,12 @@ EOF
       core.editor = "nvim";
     };
   };
+
+  # Match herdr's pane navigation: prefix + h/j/k/l move between panes
+  # (left/down/up/right). This also binds prefix + H/J/K/L to resize panes.
+  programs.tmux = {
+    enable = true;
+    keyMode = "vi";
+    customPaneNavigationAndResize = true;
+  };
 }
