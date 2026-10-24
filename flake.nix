@@ -46,7 +46,6 @@
         };
         extraSpecialArgs = {
           user = linuxUser;
-          homeDirectory = "/home/${linuxUser}";
         };
         modules = [ ./home ];
       };
