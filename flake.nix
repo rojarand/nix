@@ -21,13 +21,26 @@
 
   outputs = inputs@{ self, nix-darwin, nix-homebrew, home-manager, nixpkgs, nixpkgs-unstable }:
     let
+      lib = nixpkgs.lib;
+
       # macOS account name and nix-darwin configuration name (usually hostname).
       user = "ran";
       hostName = "mb-ran-6167";
 
-      # Linux (Raspberry Pi) account name.
-      linuxUser = "zebul";
-      linuxSystem = "aarch64-linux";
+      # Linux machines that use the shared Home Manager configuration. The key
+      # is the account name; rebuild-linux.sh selects it with `id -un`.
+      linuxHosts = {
+        root = {
+          system = "x86_64-linux";
+          homeDirectory = "/root";
+        };
+        zebul = {
+          system = "aarch64-linux";
+          homeDirectory = "/home/zebul";
+        };
+      };
+      linuxSystems =
+        lib.unique (map (host: host.system) (builtins.attrValues linuxHosts));
 
       # Expose selected unstable packages as `pkgs.<name>` on every platform.
       unstablePackages = [ "herdr" ];
@@ -38,20 +51,23 @@
         nixpkgs.lib.genAttrs unstablePackages (name: unstable.${name});
     in
     {
-      homeConfigurations.${linuxUser} = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = linuxSystem;
-          config.allowUnfree = true;
-          overlays = [ unstableOverlay ];
-        };
-        extraSpecialArgs = {
-          user = linuxUser;
-        };
-        modules = [ ./home ];
-      };
+      homeConfigurations = lib.mapAttrs (name: host:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = host.system;
+            config.allowUnfree = true;
+            overlays = [ unstableOverlay ];
+          };
+          extraSpecialArgs = {
+            user = name;
+            inherit (host) homeDirectory;
+          };
+          modules = [ ./home ];
+        }) linuxHosts;
 
-      packages.${linuxSystem}.home-manager =
-        home-manager.packages.${linuxSystem}.home-manager;
+      packages = lib.genAttrs linuxSystems (system: {
+        home-manager = home-manager.packages.${system}.home-manager;
+      });
 
       darwinConfigurations.${hostName} = nix-darwin.lib.darwinSystem {
         specialArgs = { inherit user; };
@@ -63,7 +79,10 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit user; };
+            home-manager.extraSpecialArgs = {
+              inherit user;
+              homeDirectory = "/Users/${user}";
+            };
             home-manager.users.${user} = import ./home;
           }
         ];

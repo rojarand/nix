@@ -11,17 +11,19 @@ Check the nix config:
 nix flake check --no-build
 ```
 
-## Raspberry Pi (Linux)
+## Linux
 
 On a Linux machine, apply the Home Manager configuration instead of the
 nix-darwin one:
 
 ```bash
-./rebuild-pi.sh
+./rebuild-linux.sh
 ```
 
-This targets `homeConfigurations.zebul`, links the repository to `~/.dotfiles`,
-and installs the packages from `home/default.nix` into `~/.nix-profile`.
+This selects `homeConfigurations.<current account>`, links the repository to
+`~/.dotfiles`, and installs the packages from `home/default.nix` into
+`~/.nix-profile`. Supported Linux accounts, and the platform and home directory
+for each one, are listed in `linuxHosts` in `flake.nix`.
 
 ## Shared tools
 
