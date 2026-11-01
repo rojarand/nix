@@ -1,4 +1,4 @@
-# Tools that should exist on every machine (macOS laptop and Raspberry Pi).
+# Tools that should exist on every machine (macOS laptop and Linux hosts).
 #
 # Everything listed here is installed through Nix on BOTH platforms, so do not
 # also list these in `homebrew` in ../configuration.nix. Two package managers

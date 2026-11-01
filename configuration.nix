@@ -42,7 +42,7 @@
     # onActivation.cleanup = "zap";  # remove anything not listed here, !!!apply only on a fresh installation
     onActivation.autoUpdate = true;
     onActivation.extraFlags = [ "--force" ];
-    # CLI tools shared with the Raspberry Pi are installed through Nix in
+    # CLI tools shared with Linux hosts are installed through Nix in
     # ../home/common.nix, not here. Only keep macOS-only GUI apps and tools
     # that are not packaged in nixpkgs in this list.
     brews = [

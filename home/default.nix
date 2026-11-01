@@ -1,4 +1,4 @@
-{ config, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user, homeDirectory, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
@@ -8,7 +8,7 @@ in
 
   home = {
     username = user;
-    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${user}" else "/home/${user}";
+    inherit homeDirectory;
     stateVersion = "26.05";
 
     sessionVariables = {
