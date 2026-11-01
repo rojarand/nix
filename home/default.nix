@@ -123,6 +123,33 @@ eval "$(${pkgs.starship}/bin/starship init zsh)"
 EOF
       fi
     '';
+
+    # tmux reads ~/.tmux.conf in preference to the generated
+    # ~/.config/tmux/tmux.conf, and it only loads one of them. A stale
+    # hand-written ~/.tmux.conf therefore silently overrides everything set in
+    # programs.tmux below - historically it rebound the prefix to C-q, which
+    # made Ctrl-b and the vi pane bindings dead. Retire that file so this
+    # module is the single source of truth. The original is kept alongside for
+    # reference rather than destroyed.
+    #
+    # Runs after writeBoundary so the generated config already exists, and is
+    # idempotent: once the legacy file is gone there is nothing left to do.
+    activation.removeLegacyTmuxConf =
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        legacy="$HOME/.tmux.conf"
+        generated="$HOME/.config/tmux/tmux.conf"
+
+        if [ -f "$legacy" ] && [ ! -L "$legacy" ] && [ -f "$generated" ]; then
+          backup="$legacy.pre-nix"
+          if [ -f "$backup" ] && cmp -s "$legacy" "$backup"; then
+            # Already preserved by an earlier activation.
+            rm -f "$legacy"
+          else
+            run mv "$legacy" "$backup"
+            echo "tmux: moved legacy $legacy to $backup so the Nix config at $generated takes effect" >&2
+          fi
+        fi
+      '';
   };
 
   programs.starship = {
