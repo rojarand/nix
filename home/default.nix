@@ -14,6 +14,21 @@ in
     sessionVariables = {
       EDITOR = "nvim";
       VISUAL = "nvim";
+      # Neovim spawns helpers such as `rg` by bare name, so the Home Manager
+      # profile has to be on PATH for GUI-launched terminals (WezTerm from the
+      # Dock never reads ~/.zshrc) as well as for login shells. Without this,
+      # snacks.nvim's grep picker fails with "Failed to spawn rg".
+      PATH = lib.mkForce (lib.concatStringsSep ":" [
+        "$HOME/.nix-profile/bin"
+        "/run/current-system/sw/bin"
+        "/etc/profiles/per-user/$USER/bin"
+        "/nix/var/nix/profiles/default/bin"
+        "/usr/local/bin"
+        "/usr/bin"
+        "/bin"
+        "/usr/sbin"
+        "/sbin"
+      ]);
     };
 
     file.".config/wezterm".source =
@@ -61,6 +76,35 @@ source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions
 source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 bindkey '^f' autosuggest-accept
 # END nix-env-setup zsh enhancements
+EOF
+      fi
+    '';
+
+    # Neovim spawns helper binaries such as `rg` by bare name, so interactive
+    # shells must have the Home Manager profile on PATH. Without this, opening
+    # an editor or terminal on a machine whose shell predates Home Manager
+    # leaves `rg` unresolved and snacks.nvim's grep picker fails with
+    # "Failed to spawn rg". This block is applied independently of the
+    # enhancements block above so it is also added to an already-patched
+    # ~/.zshrc.
+    activation.installNixProfilePath = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      zshrc="$HOME/.zshrc"
+      marker="# BEGIN nix-env-setup path"
+
+      if ! grep -qF "$marker" "$zshrc" 2>/dev/null; then
+        cat >> "$zshrc" <<'EOF'
+
+# BEGIN nix-env-setup path
+# Added by Home Manager from nix-env-setup.
+# Makes tools installed by Nix (notably `rg`, used by Neovim's grep picker)
+# resolvable from interactive shells.
+if [ -d "$HOME/.nix-profile/bin" ]; then
+  case ":$PATH:" in
+    *":$HOME/.nix-profile/bin:"*) ;;
+    *) export PATH="$HOME/.nix-profile/bin:$PATH" ;;
+  esac
+fi
+# END nix-env-setup path
 EOF
       fi
     '';
