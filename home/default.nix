@@ -42,6 +42,10 @@ in
     file.".config/herdr/config.toml".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr/config.toml";
 
+    # Git bash aliases, kept as a plain file so the shell can source them.
+    file.".git_aliases".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.git_aliases";
+
     file.".pi/agent/AGENTS.md".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
     file.".claude/CLAUDE.md".source =
@@ -150,6 +154,23 @@ EOF
           fi
         fi
       '';
+
+    activation.installGitAliasesBashIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      bashrc="$HOME/.bashrc"
+      marker="# BEGIN nix-env-setup git aliases"
+
+      if ! grep -qF "$marker" "$bashrc" 2>/dev/null; then
+        cat >> "$bashrc" <<'EOF'
+
+# BEGIN nix-env-setup git aliases
+# Added by Home Manager from the git-bash-aliases project.
+if [ -f "$HOME/.git_aliases" ]; then
+    . "$HOME/.git_aliases"
+fi
+# END nix-env-setup git aliases
+EOF
+      fi
+    '';
   };
 
   programs.starship = {
