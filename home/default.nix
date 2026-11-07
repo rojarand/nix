@@ -155,6 +155,23 @@ EOF
         fi
       '';
 
+    activation.installGitAliasesZshIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      zshrc="$HOME/.zshrc"
+      marker="# BEGIN nix-env-setup git aliases"
+
+      if ! grep -qF "$marker" "$zshrc" 2>/dev/null; then
+        cat >> "$zshrc" <<'EOF'
+
+# BEGIN nix-env-setup git aliases
+# Added by Home Manager from nix-env-setup.
+if [ -f "$HOME/.git_aliases" ]; then
+    . "$HOME/.git_aliases"
+fi
+# END nix-env-setup git aliases
+EOF
+      fi
+    '';
+
     activation.installGitAliasesBashIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       bashrc="$HOME/.bashrc"
       marker="# BEGIN nix-env-setup git aliases"
