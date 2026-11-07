@@ -5,7 +5,12 @@ alias glo='git log --pretty=format:"%h%x09%<|(30)%an%x09%ci%x09%s"'
 alias gpl='git pull origin $(git branch | grep "\*" | grep -v "develop" | awk '\''{print $2}'\'')'
 alias gbr='git branch'
 alias gmr='git branch -merged'
+alias gsrt='git for-each-ref --sort=committerdate refs/heads/ --format='\''%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'\'''
 alias ghn='git show --name-only --pretty="" HEAD'
 alias ghs='git show HEAD'
+alias gse='f(){ local lines=1; if [ -n "$2" ]; then lines=$2; fi; git grep -n -C"$lines" "$1" $(git rev-list --all); }; f'
+alias grmmer='for b in $(git branch --merged | grep -v develop | grep -v main | grep -v "*"); do git branch -d $b; done'
+
+alias gch='f(){ [ -z "$1" ] && { echo "Usage: gch <branch-substring>"; return 1; }; matches=$(git branch --format="%(refname:short)" --list "*$1*"); [ -z "$matches" ] && { echo "No branch matching: $1"; return 1; }; count=$(printf "%s\n" "$matches" | wc -l); if [ "$count" -gt 1 ] && command -v fzf >/dev/null 2>&1; then branch=$(printf "%s\n" "$matches" | fzf --select-1 --exit-0); [ -z "$branch" ] && return 1; elif [ "$count" -gt 1 ]; then echo "Multiple branches matching: $1"; printf "%s\n" "$matches"; return 1; else branch=$matches; fi; git checkout "$branch"; }; f'
 
 alias gdf='f(){ [ -z "$1" ] && { echo "Usage: gdf <partial-file-name>"; return 1; }; matches=$({ git diff --name-only; git diff --cached --name-only; } | grep -F -- "$1" | sort -u); [ -z "$matches" ] && { echo "No changed files matching: $1"; return 1; }; while IFS= read -r file; do git diff -- "$file"; done <<< "$matches"; }; f'
