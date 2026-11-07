@@ -8,4 +8,10 @@ fi
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 ln -sfn "$DIR" "$HOME/.dotfiles"
-exec sudo /run/current-system/sw/bin/darwin-rebuild switch --flake "path:$DIR#mb-ran-6167"
+sudo /run/current-system/sw/bin/darwin-rebuild switch --flake "path:$DIR#mb-ran-6167"
+
+case "${SHELL:-}" in
+  */zsh) echo 'Rebuild complete. Run: source ~/.zshrc' ;;
+  */bash) echo 'Rebuild complete. Run: source ~/.bashrc' ;;
+  *) echo 'Rebuild complete. Source your shell configuration to load the changes in this terminal.' ;;
+esac
