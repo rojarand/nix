@@ -1,4 +1,4 @@
-{ pkgs, user, ... }:
+{ pkgs, lib, user, ... }:
 
 {
   # Determinate already manages the Nix daemon, so nix-darwin shouldn't.
@@ -19,6 +19,25 @@
   ];
 
   system.stateVersion = 6;
+
+  # GUI apps on macOS (WezTerm opened from the Dock, Spotlight, or Finder)
+  # inherit the launchd environment, not the shell's. Neovim then cannot find
+  # helper binaries such as `rg` and snacks.nvim's grep picker fails with
+  # "Failed to spawn rg". Put the Nix profiles on the system-wide search path
+  # so those apps resolve the same tools as a login shell.
+  environment.pathsToLink = [ "/bin" ];
+  environment.variables = {
+    PATH = lib.mkForce (lib.concatStringsSep ":" [
+      "/run/current-system/sw/bin"
+      "/etc/profiles/per-user/${user}/bin"
+      "/nix/var/nix/profiles/default/bin"
+      "/usr/local/bin"
+      "/usr/bin"
+      "/bin"
+      "/usr/sbin"
+      "/sbin"
+    ]);
+  };
   system.defaults = {
     NSGlobalDomain = {
       # AppleInterfaceStyle = "Dark";

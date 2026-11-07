@@ -14,6 +14,21 @@ in
     sessionVariables = {
       EDITOR = "nvim";
       VISUAL = "nvim";
+      # Neovim spawns helpers such as `rg` by bare name, so the Home Manager
+      # profile has to be on PATH for GUI-launched terminals (WezTerm from the
+      # Dock never reads ~/.zshrc) as well as for login shells. Without this,
+      # snacks.nvim's grep picker fails with "Failed to spawn rg".
+      PATH = lib.mkForce (lib.concatStringsSep ":" [
+        "$HOME/.nix-profile/bin"
+        "/run/current-system/sw/bin"
+        "/etc/profiles/per-user/$USER/bin"
+        "/nix/var/nix/profiles/default/bin"
+        "/usr/local/bin"
+        "/usr/bin"
+        "/bin"
+        "/usr/sbin"
+        "/sbin"
+      ]);
     };
 
     file.".config/wezterm".source =
@@ -65,6 +80,35 @@ EOF
       fi
     '';
 
+    # Neovim spawns helper binaries such as `rg` by bare name, so interactive
+    # shells must have the Home Manager profile on PATH. Without this, opening
+    # an editor or terminal on a machine whose shell predates Home Manager
+    # leaves `rg` unresolved and snacks.nvim's grep picker fails with
+    # "Failed to spawn rg". This block is applied independently of the
+    # enhancements block above so it is also added to an already-patched
+    # ~/.zshrc.
+    activation.installNixProfilePath = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      zshrc="$HOME/.zshrc"
+      marker="# BEGIN nix-env-setup path"
+
+      if ! grep -qF "$marker" "$zshrc" 2>/dev/null; then
+        cat >> "$zshrc" <<'EOF'
+
+# BEGIN nix-env-setup path
+# Added by Home Manager from nix-env-setup.
+# Makes tools installed by Nix (notably `rg`, used by Neovim's grep picker)
+# resolvable from interactive shells.
+if [ -d "$HOME/.nix-profile/bin" ]; then
+  case ":$PATH:" in
+    *":$HOME/.nix-profile/bin:"*) ;;
+    *) export PATH="$HOME/.nix-profile/bin:$PATH" ;;
+  esac
+fi
+# END nix-env-setup path
+EOF
+      fi
+    '';
+
     activation.installStarshipZshIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       zshrc="$HOME/.zshrc"
       marker="# BEGIN nix-env-setup starship"
@@ -79,6 +123,33 @@ eval "$(${pkgs.starship}/bin/starship init zsh)"
 EOF
       fi
     '';
+
+    # tmux reads ~/.tmux.conf in preference to the generated
+    # ~/.config/tmux/tmux.conf, and it only loads one of them. A stale
+    # hand-written ~/.tmux.conf therefore silently overrides everything set in
+    # programs.tmux below - historically it rebound the prefix to C-q, which
+    # made Ctrl-b and the vi pane bindings dead. Retire that file so this
+    # module is the single source of truth. The original is kept alongside for
+    # reference rather than destroyed.
+    #
+    # Runs after writeBoundary so the generated config already exists, and is
+    # idempotent: once the legacy file is gone there is nothing left to do.
+    activation.removeLegacyTmuxConf =
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        legacy="$HOME/.tmux.conf"
+        generated="$HOME/.config/tmux/tmux.conf"
+
+        if [ -f "$legacy" ] && [ ! -L "$legacy" ] && [ -f "$generated" ]; then
+          backup="$legacy.pre-nix"
+          if [ -f "$backup" ] && cmp -s "$legacy" "$backup"; then
+            # Already preserved by an earlier activation.
+            rm -f "$legacy"
+          else
+            run mv "$legacy" "$backup"
+            echo "tmux: moved legacy $legacy to $backup so the Nix config at $generated takes effect" >&2
+          fi
+        fi
+      '';
   };
 
   programs.starship = {

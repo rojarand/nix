@@ -13,9 +13,11 @@
     ffmpeg
     git
     herdr
+    htop
     neovim
     ripgrep
     tmux
+    tree
 
     # zsh integration, sourced by the activation scripts in ./default.nix.
     zsh-autosuggestions
