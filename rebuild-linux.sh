@@ -26,4 +26,10 @@ flake="git+file://${DIR}"
 user="$(id -un)"
 
 ln -sfn "$DIR" "$HOME/.dotfiles"
-exec nix run "${flake}#home-manager" -- switch --flake "${flake}#${user}"
+nix run "${flake}#home-manager" -- switch --flake "${flake}#${user}"
+
+case "${SHELL:-}" in
+  */zsh) echo 'Rebuild complete. Run: source ~/.zshrc' ;;
+  */bash) echo 'Rebuild complete. Run: source ~/.bashrc' ;;
+  *) echo 'Rebuild complete. Source your shell configuration to load the changes in this terminal.' ;;
+esac
