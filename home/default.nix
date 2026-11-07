@@ -46,6 +46,28 @@ in
     file.".git_aliases".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.git_aliases";
 
+    # Homes migrated from the earlier setup still carry a hand-made
+    # ~/.git_aliases pointing at wherever the aliases used to live (for example
+    # ~/aliases/git-bash-aliases/.git_aliases). Home Manager refuses to replace
+    # such a path during checkLinkTargets, so activation aborts with
+    # "Existing file '/root/.git_aliases' would be clobbered" before anything
+    # else runs. Retire the stale link so the file.".git_aliases" above becomes
+    # the single source of truth. The file it pointed at is left untouched.
+    #
+    # Ordered before checkLinkTargets, and idempotent: once Home Manager owns
+    # the path the link already matches `wanted` and nothing happens.
+    activation.removeLegacyGitAliasesLink =
+      lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+        target="$HOME/.git_aliases"
+        wanted="${dotfiles}/home/.git_aliases"
+
+        if [ -L "$target" ] && [ "$(readlink "$target")" != "$wanted" ]; then
+          stale="$(readlink "$target")"
+          run rm -f "$target"
+          echo "git aliases: removed stale link $target -> $stale so Home Manager can manage it" >&2
+        fi
+      '';
+
     file.".pi/agent/AGENTS.md".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
     file.".claude/CLAUDE.md".source =
