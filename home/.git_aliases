@@ -1,5 +1,6 @@
 alias gst='git status'
 alias gps='git push origin $(git branch | grep "\*" | awk '\''{print $2}'\'')'
+alias gpsf='git push --force-with-lease origin $(git branch --show-current)'
 alias glo='git log --pretty=format:"%h%x09%<|(30)%an%x09%ci%x09%s"'
 alias gpl='git pull origin $(git branch | grep "\*" | grep -v "develop" | awk '\''{print $2}'\'')'
 alias gbr='git branch'
