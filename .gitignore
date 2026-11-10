@@ -1,3 +1,4 @@
 *.swp
 *.log
 **/session.json
+/home/.config/herdr/release-notes.json
