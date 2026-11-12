@@ -42,29 +42,22 @@ in
     file.".config/herdr/config.toml".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr/config.toml";
 
-    # Git bash aliases, kept as a plain file so the shell can source them.
-    file.".git_aliases".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.git_aliases";
+    # Shell aliases, kept as a plain file so bash and zsh can source them.
+    file.".aliases".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.aliases";
 
-    # Homes migrated from the earlier setup still carry a hand-made
-    # ~/.git_aliases pointing at wherever the aliases used to live (for example
-    # ~/aliases/git-bash-aliases/.git_aliases). Home Manager refuses to replace
-    # such a path during checkLinkTargets, so activation aborts with
-    # "Existing file '/root/.git_aliases' would be clobbered" before anything
-    # else runs. Retire the stale link so the file.".git_aliases" above becomes
-    # the single source of truth. The file it pointed at is left untouched.
-    #
-    # Ordered before checkLinkTargets, and idempotent: once Home Manager owns
-    # the path the link already matches `wanted` and nothing happens.
-    activation.removeLegacyGitAliasesLink =
+    # An older setup may have left a hand-made ~/.aliases link. Retire only
+    # stale links so Home Manager can manage the new path without clobbering
+    # regular files.
+    activation.removeLegacyAliasesLink =
       lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-        target="$HOME/.git_aliases"
-        wanted="${dotfiles}/home/.git_aliases"
+        target="$HOME/.aliases"
+        wanted="${dotfiles}/home/.aliases"
 
         if [ -L "$target" ] && [ "$(readlink "$target")" != "$wanted" ]; then
           stale="$(readlink "$target")"
           run rm -f "$target"
-          echo "git aliases: removed stale link $target -> $stale so Home Manager can manage it" >&2
+          echo "aliases: removed stale link $target -> $stale so Home Manager can manage it" >&2
         fi
       '';
 
@@ -177,36 +170,37 @@ EOF
         fi
       '';
 
-    activation.installGitAliasesZshIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    # Use a new marker so existing installations also pick up the renamed file.
+    activation.installAliasesZshIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       zshrc="$HOME/.zshrc"
-      marker="# BEGIN nix-env-setup git aliases"
+      marker="# BEGIN nix-env-setup aliases"
 
       if ! grep -qF "$marker" "$zshrc" 2>/dev/null; then
         cat >> "$zshrc" <<'EOF'
 
-# BEGIN nix-env-setup git aliases
+# BEGIN nix-env-setup aliases
 # Added by Home Manager from nix-env-setup.
-if [ -f "$HOME/.git_aliases" ]; then
-    . "$HOME/.git_aliases"
+if [ -f "$HOME/.aliases" ]; then
+    . "$HOME/.aliases"
 fi
-# END nix-env-setup git aliases
+# END nix-env-setup aliases
 EOF
       fi
     '';
 
-    activation.installGitAliasesBashIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    activation.installAliasesBashIntegration = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       bashrc="$HOME/.bashrc"
-      marker="# BEGIN nix-env-setup git aliases"
+      marker="# BEGIN nix-env-setup aliases"
 
       if ! grep -qF "$marker" "$bashrc" 2>/dev/null; then
         cat >> "$bashrc" <<'EOF'
 
-# BEGIN nix-env-setup git aliases
-# Added by Home Manager from the git-bash-aliases project.
-if [ -f "$HOME/.git_aliases" ]; then
-    . "$HOME/.git_aliases"
+# BEGIN nix-env-setup aliases
+# Added by Home Manager from nix-env-setup.
+if [ -f "$HOME/.aliases" ]; then
+    . "$HOME/.aliases"
 fi
-# END nix-env-setup git aliases
+# END nix-env-setup aliases
 EOF
       fi
     '';
