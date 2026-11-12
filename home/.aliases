@@ -1,4 +1,4 @@
-# Git shortcuts. Source this file in your shell to use them.
+# Shell shortcuts. Source this file in your shell to use them.
 
 # gst: Show status. Example: gst
 alias gst='git status'
@@ -47,3 +47,29 @@ alias gch='f(){ [ -z "$1" ] && { echo "Usage: gch <branch-substring>"; return 1;
 
 # gdf: Show unstaged diffs for changed files matching a name. Example: gdf config
 alias gdf='f(){ [ -z "$1" ] && { echo "Usage: gdf <partial-file-name>"; return 1; }; matches=$({ git diff --name-only; git diff --cached --name-only; } | grep -F -- "$1" | sort -u); [ -z "$matches" ] && { echo "No changed files matching: $1"; return 1; }; while IFS= read -r file; do git diff -- "$file"; done <<< "$matches"; }; f'
+
+# Herdr workspace shortcuts.
+# hrdls: List space names and workspace IDs in a table. Example: hrdls
+hrdls() {
+  local response
+  response=$(herdr workspace list) || return
+  printf '%s\n' "$response" | jq -r '["Space name", "Workspace ID"], (.result.workspaces[] | [.label, .workspace_id]) | @tsv' | column -t -s "$(printf '\t')"
+}
+
+# hrdadd: Add a space by name. Example: hrdadd "my project"
+hrdadd() {
+  if [ "$#" -ne 1 ] || [ -z "$1" ]; then
+    printf 'Usage: hrdadd <space-name>\n' >&2
+    return 2
+  fi
+  herdr workspace create --label "$1"
+}
+
+# hrdrm: Remove a space by workspace ID. Example: hrdrm w5
+hrdrm() {
+  if [ "$#" -ne 1 ] || [ -z "$1" ]; then
+    printf 'Usage: hrdrm <workspace-id>\n' >&2
+    return 2
+  fi
+  herdr workspace close "$1"
+}

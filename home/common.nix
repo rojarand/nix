@@ -14,6 +14,7 @@
     git
     herdr
     htop
+    jq
     neovim
     ripgrep
     tmux
